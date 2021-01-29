@@ -19,8 +19,13 @@ def create_files_list(directory):
     return files_list
 
 mat_file_names = create_files_list(mat_files_directory) 
-mat_file_name = r"CMIP5_rcp45_pr.mat"
-################################ DRIVER CODE ################################
+mat_file_name = r"CMIP5_historical_tasmax.mat"
 
+################################ DRIVER CODE ################################
 mfr = MatFileReader(mat_file_name)
-print(mfr.info())
+
+annualmax = mfr.GCM_FIELDS["Temp"]["AnnualMax"]
+decades = annualmax[:,0]
+temps = annualmax[:,1]
+
+print(decades, temps)
