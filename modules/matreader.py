@@ -58,10 +58,10 @@ class MatFileReader(FileReader):
             "tasmax" : "Temp",
         }
 
-        self.variable_data = {
-            "Precip" : {},
-            "Temp"   : {"MonthlyMax":None, "AnnualMax":None, "Unit":None},
-        }
+        # self.variable_data = {
+        #     "Precip" : {"MonthlyMean":None, "AnnualMean":None, "AnnualMax":None, "Unit":None},
+        #     "Temp"   : {"MonthlyMax":None, "AnnualMax":None, "Unit":None},
+        # }
 
         # initialize GCM_fields
         self.GCM_FIELDS = {
@@ -128,7 +128,12 @@ class MatFileReader(FileReader):
                     "Unit": self.results["GCM"][0][0][0][0][13][0][0][2][0], # str
                 }
             elif self.variable == "Precip":
-                print("CODE NOT IMPLEMENTED YET")
+                self.GCM_FIELDS[self.variable] = {
+                    "MonthlyMean": self.results["GCM"][0][0][0][0][13][0][0][0], # 2D array
+                    "AnnualMean": self.results["GCM"][0][0][0][0][13][0][0][1], # 2D array
+                    "AnnualMax": self.results["GCM"][0][0][0][0][13][0][0][2], # 2D array
+                    "Unit": self.results["GCM"][0][0][0][0][13][0][0][3][0], # str
+                }
         else:
             raise self.VaribleNotSupported("\n\nPlease check file name.")
 
