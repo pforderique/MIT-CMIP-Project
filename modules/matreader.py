@@ -20,7 +20,7 @@ def create_files_list(directory):
 
 mat_files_directory = "mat_files/"
 mat_file_names = create_files_list(mat_files_directory) # Comment out for testing rn
-mat_file_name = r"CMIP5_historical_tasmax.mat"
+mat_file_name = r"CMIP5_historical_pr.mat"
 
 class FileReader():
     def __init__(self, filename, directory="") -> None:
@@ -93,7 +93,7 @@ class MatFileReader(FileReader):
         for key, val in d.items():
             if isinstance(val, dict):
                 res += str(key).ljust(9) + " :" + self.__get_dict_items(val)
-            elif isinstance(val, ndarray):
+            elif isinstance(val, ndarray) and val.ndim > 1:
                 res += str(key) + " :\n" + str(val) + "\n"
             else:
                 res += str(key).ljust(9) + " : " + str(val) + "\n"
@@ -104,7 +104,7 @@ class MatFileReader(FileReader):
 
         # fills in the generic information
         for field, result in zip(self.GCM_FIELDS, self.results["GCM"][0][0][0][0]): 
-            if isinstance(result[0], str):
+            if isinstance(result[0], str) or len(result[0]) > 1:
                 value = result[0]
             else:
                 # if isinstance(result[0][0], ndarray):
@@ -117,8 +117,10 @@ class MatFileReader(FileReader):
 
         # overwrites that last special field with dict of its subfields 
         if self.variable in self.supported_vars: 
-            # handles special variables
             self.variable = self.supported_vars[self.variable]
+
+            # handles specific variables 
+            # (it seems that only tasmax and pr had a special struct? thus more classes seems unnecc)
             if self.variable == "Temp":
                 self.GCM_FIELDS[self.variable] = {
                     "MonthlyMax": self.results["GCM"][0][0][0][0][13][0][0][0], # 2D array
