@@ -6,3 +6,7 @@ new fields were to be added, we could simply add on to the hash table.
 We could add on to the hash table every time. I considered keeping 
 fields in an array and doing .index(.find('field')) every time, but if 
 we mix up orders, it could get messy again -> I'll just use a hash table.
+
+29 Jan 2021:
+Successfully implemented MatFileReader class and have it display file 
+properties/variables.

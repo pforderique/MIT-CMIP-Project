@@ -16,6 +16,12 @@ class FileReader():
         self.path = directory + filename
         self.file_name = filename
         self.extension = filename[filename.find("."):] # caution! error if '.' in name
+        self._SCREEN_WIDTH = 40
+
+    def get_file_info(self):
+        ''' Return information on file path, extension, and name '''
+        res = "FILE INFO".center(self._SCREEN_WIDTH, "*")
+        return res + f"\nFile: {self.file_name}\nExtension: {self.extension}\nPath: {self.path}\n"
 
     def get_path(self):
         return self.path
@@ -32,6 +38,7 @@ class MatFileReader(FileReader):
         # initialize data from just file name string
         super().__init__(mat_file_name, directory)
         self.era, self.variable = self.__extract_info_from_file_name(self.file_name)
+        
         
         # handle HDDCDD files by asking to use a different class
         if self.variable == "HDDCDD": 
@@ -72,13 +79,18 @@ class MatFileReader(FileReader):
 
         self.__read_to_gcm()
 
+    def info(self):
+        ''' Return important, stored information in the file including the GCM '''
+        return self.get_file_info() + "\n" + self.get_results() + "\n" + self.get_gcm_fields()
+
     def get_results(self):
         ''' return a summary of the results field '''
-        return f"Era: {self.era}\nVariable: {self.variable}\nGCM: {len(self.GCM_FIELDS)} fields"
+        res = "RESULTS".center(self._SCREEN_WIDTH,"*")
+        return res + f"\nEra: {self.era}\nVariable: {self.variable}\nGCM: ({len(self.GCM_FIELDS)} fields)\n"
 
     def get_gcm_fields(self):
-        res = '''GCM FIELDS:\n'''
-        res += 'Ex: Use mfr.GCM_FIELDS["Temp"]["AnnualMax"] to get the 2D ndarray of values\n'
+        res = "GCM FIELDS".center(self._SCREEN_WIDTH, "*")
+        res += '\nEx: Use mfr.GCM_FIELDS["Temp"]["AnnualMax"] to get the 2D ndarray of values\n'
         return res + self.__get_dict_items(self.GCM_FIELDS)
 
     def __get_dict_items(self, d):
