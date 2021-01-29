@@ -17,8 +17,30 @@ def create_files_list(directory):
                 files_list.append(entry.name)
     return files_list
 
+def extract_info(filename):
+    era, data_type = [], []
+    start = 6 # CIMP5_---
+    end = len(filename) - 4 # ---.mat
+    _found = False
+    for idx in range(start, end): 
+        char = filename[idx]
+        if char == '_': 
+            _found = True
+            continue
+        if not _found: 
+            era.append(char)
+        else:
+            data_type.append(char)
+
+    return ''.join(era), ''.join(data_type)
+
 ######################## DRIVER CODE ################################
 mat_files_directory = "mat_files/"
-mat_files = create_files_list(mat_files_directory)
+mat_file_names = create_files_list(mat_files_directory) # Comment out for testing rn
+mat_file_name = r"mat_files\CMIP5_historical_tasmax.mat"
 
-for file in mat_files: print(file)
+# use this to create multiple file reader objects
+for file_name in mat_file_names: 
+    print(file_name) # for degugging
+    era, data_type = extract_info(file_name)
+    print(era, data_type)
