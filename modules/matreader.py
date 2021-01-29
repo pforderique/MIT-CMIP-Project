@@ -20,7 +20,7 @@ def create_files_list(directory):
 
 mat_files_directory = "mat_files/"
 mat_file_names = create_files_list(mat_files_directory) # Comment out for testing rn
-mat_file_name = r"CMIP5_rcp45_tasmin.mat"
+mat_file_name = r"CMIP5_rcp45_pr.mat"
 
 class FileReader():
     def __init__(self, filename, directory="") -> None:
@@ -45,8 +45,8 @@ class MatFileReader(FileReader):
         self.era, self.variable = self.__extract_info_from_file_name(self.file_name)
         
         # handle HDDCDD files by asking to use a different class
-        if self.era == "HDDCDD": 
-            print("PLEASE USE HDDCDD READER FOR THIS FILE")
+        if self.variable == "HDDCDD": 
+            print('*'*30 + "\nPLEASE USE HDDCDD READER FOR THIS FILE\n" + '*'*30)
             return
 
         # setup rest of mat file information and attributes
@@ -83,6 +83,9 @@ class MatFileReader(FileReader):
 
         self.__read_to_gcm()
 
+    def get_results(self):
+        ''' return a summary of the results field '''
+        return f"Era: {self.era}\nVariable: {self.variable}\nGCM: {len(self.GCM_FIELDS)} fields"
 
     def get_gcm_fields(self):
         res = '''GCM FIELDS:\n'''
@@ -90,14 +93,16 @@ class MatFileReader(FileReader):
         return res + self.__get_dict_items(self.GCM_FIELDS)
 
     def __get_dict_items(self, d):
+        ''' returns 1 str of formatted items in a dictionary'''
         res = '\n'
+        LEFTSPACE = 9
         for key, val in d.items():
             if isinstance(val, dict):
-                res += str(key).ljust(9) + " :" + self.__get_dict_items(val)
+                res += str(key).ljust(LEFTSPACE) + " :" + self.__get_dict_items(val)
             elif isinstance(val, ndarray) and val.ndim > 1:
                 res += str(key) + " :\n" + str(val) + "\n"
             else:
-                res += str(key).ljust(9) + " : " + str(val) + "\n"
+                res += str(key).ljust(LEFTSPACE) + " : " + str(val) + "\n"
         return res
 
     def __read_to_gcm(self):
@@ -129,8 +134,10 @@ class MatFileReader(FileReader):
                     "AnnualMax": self.results["GCM"][0][0][0][0][13][0][0][1], # 2D array
                     "Unit": self.results["GCM"][0][0][0][0][13][0][0][2][0], # str
                 }
-        else:
-            raise self.VaribleNotSupported("\n\nPlease check file name.")
+        else:                                                                   
+            raise self.VariableNotSupported(
+                "\n\nPlease check file name. Unsupported varaible: " + self.variable
+            )
 
     def __extract_info_from_file_name(self, filename):
         '''Extracts the era and variable type from filename'''
@@ -151,13 +158,13 @@ class MatFileReader(FileReader):
         return ''.join(era), ''.join(var)
 
     # exception classes
-    class VaribleNotSupported(Exception): pass
+    class VariableNotSupported(Exception): pass
 
 
 ################################ DRIVER CODE ################################
 
 f1 = MatFileReader(mat_file_name)
-print(f1.get_gcm_fields())
+print(f1.get_results())
 
 # use this to create multiple file reader objects
 # for file_name in mat_file_names: 
