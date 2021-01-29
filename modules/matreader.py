@@ -20,7 +20,7 @@ def create_files_list(directory):
 
 mat_files_directory = "mat_files/"
 mat_file_names = create_files_list(mat_files_directory) # Comment out for testing rn
-mat_file_name = r"CMIP5_historical_pr.mat"
+mat_file_name = r"CMIP5_rcp45_pr.mat"
 
 class FileReader():
     def __init__(self, filename, directory="") -> None:
@@ -52,16 +52,27 @@ class MatFileReader(FileReader):
         # main results variable where info is stored
         self.results = self.file["results"]
 
-        # variable lookup: maps file name -> field name (ONLY 2 SUPPORTED RIGHT NOW)
+        # variable lookup: maps file name -> special field name (3 SUPPORTED RIGHT NOW)
         self.supported_vars = {
             "pr"     : "Precip",
             "tasmax" : "Temp",
+            "taxmin" : "",          # these files don't have a special struct?
         }
 
-        # self.variable_data = {
-        #     "Precip" : {"MonthlyMean":None, "AnnualMean":None, "AnnualMax":None, "Unit":None},
-        #     "Temp"   : {"MonthlyMax":None, "AnnualMax":None, "Unit":None},
-        # }
+        self.variable_data = {
+            "Precip" : {
+                    "MonthlyMean": self.results["GCM"][0][0][0][0][13][0][0][0], # 2D array
+                    "AnnualMean": self.results["GCM"][0][0][0][0][13][0][0][1], # 2D array
+                    "AnnualMax": self.results["GCM"][0][0][0][0][13][0][0][2], # 2D array
+                    "Unit": self.results["GCM"][0][0][0][0][13][0][0][3][0], # str
+            },
+            "Temp"   : {
+                "MonthlyMax": self.results["GCM"][0][0][0][0][13][0][0][0], # 2D array
+                "AnnualMax": self.results["GCM"][0][0][0][0][13][0][0][1], # 2D array
+                "Unit": self.results["GCM"][0][0][0][0][13][0][0][2][0], # str
+            },
+            ""       : {},
+        }
 
         # initialize GCM_fields
         self.GCM_FIELDS = {
@@ -118,22 +129,7 @@ class MatFileReader(FileReader):
         # overwrites that last special field with dict of its subfields 
         if self.variable in self.supported_vars: 
             self.variable = self.supported_vars[self.variable]
-
-            # handles specific variables 
-            # (it seems that only tasmax and pr had a special struct? thus more classes seems unnecc)
-            if self.variable == "Temp":
-                self.GCM_FIELDS[self.variable] = {
-                    "MonthlyMax": self.results["GCM"][0][0][0][0][13][0][0][0], # 2D array
-                    "AnnualMax": self.results["GCM"][0][0][0][0][13][0][0][1], # 2D array
-                    "Unit": self.results["GCM"][0][0][0][0][13][0][0][2][0], # str
-                }
-            elif self.variable == "Precip":
-                self.GCM_FIELDS[self.variable] = {
-                    "MonthlyMean": self.results["GCM"][0][0][0][0][13][0][0][0], # 2D array
-                    "AnnualMean": self.results["GCM"][0][0][0][0][13][0][0][1], # 2D array
-                    "AnnualMax": self.results["GCM"][0][0][0][0][13][0][0][2], # 2D array
-                    "Unit": self.results["GCM"][0][0][0][0][13][0][0][3][0], # str
-                }
+            self.GCM_FIELDS[self.variable] = self.variable_data[self.variable]
         else:
             raise self.VaribleNotSupported("\n\nPlease check file name.")
 
@@ -163,6 +159,7 @@ class MatFileReader(FileReader):
 
 f1 = MatFileReader(mat_file_name)
 print(f1.get_gcm_fields())
+print(f1.GCM_FIELDS["Precip"]["AnnualMax"])
 
 # use this to create multiple file reader objects
 # for file_name in mat_file_names: 

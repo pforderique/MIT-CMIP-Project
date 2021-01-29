@@ -6,7 +6,7 @@ disp(gcm);
 
 % get the annual maxes for each decade
 annuals = gcm.AnnualMax;
-disp(annuals)
+disp(annuals);
 
 % get data point by data point - 1.85000 is 1850!
-annuals(1)
+annuals(1);
