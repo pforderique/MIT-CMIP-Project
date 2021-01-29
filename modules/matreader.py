@@ -8,6 +8,19 @@ Learning how to use scipy.io lib to open and read mat files
 '''
 from os import scandir
 from scipy.io import loadmat
+from numpy import ndarray
+
+def create_files_list(directory):
+    files_list = []
+    with scandir(directory) as entries:
+        for entry in entries:
+            if entry.is_file():
+                files_list.append(entry.name)
+    return files_list
+
+mat_files_directory = "mat_files/"
+mat_file_names = create_files_list(mat_files_directory) # Comment out for testing rn
+mat_file_name = r"CMIP5_historical_tasmax.mat"
 
 class FileReader():
     def __init__(self, filename, directory="") -> None:
@@ -25,7 +38,7 @@ class FileReader():
         return self.extension
 
 class MatFileReader(FileReader):
-    def __init__(self, mat_file_name, directory="mat_files/") -> None:
+    def __init__(self, mat_file_name, directory=mat_files_directory) -> None:
 
         # initialize data from just file name string
         super().__init__(mat_file_name, directory)
@@ -40,9 +53,14 @@ class MatFileReader(FileReader):
         self.results = self.file["results"]
 
         # variable lookup: maps file name -> field name (ONLY 2 SUPPORTED RIGHT NOW)
-        self.supported_variables = {
+        self.supported_vars = {
             "pr"     : "Precip",
             "tasmax" : "Temp",
+        }
+
+        self.variable_data = {
+            "Precip" : {},
+            "Temp"   : {"MonthlyMax":None, "AnnualMax":None, "Unit":None},
         }
 
         # initialize GCM_fields
@@ -61,12 +79,49 @@ class MatFileReader(FileReader):
             'Months'    : None,
             'Trim'      : None,
         }
-        try: 
-            self.GCM_FIELDS[self.supported_variables[self.variable]] = None
-        except KeyError: 
+
+        self.__read_to_gcm()
+
+
+    def get_gcm_fields(self):
+        res = '\n'
+        for key, val in self.GCM_FIELDS.items():
+            res += str(key).ljust(9) + " : " + str(val) + "\n"
+        return res
+
+    def __read_to_gcm(self):
+        ''' fills in the gcm attribute with the mat file data '''
+
+        # fills in the generic information
+        for field, result in zip(self.GCM_FIELDS, self.results["GCM"][0][0][0][0]): 
+            if isinstance(result[0], str):
+                value = result[0]
+            else:
+                # if isinstance(result[0][0], ndarray):
+                #     for var_data, array in zip(self.variable_data[self.variable], result[0][0]):
+                #         self.variable_data[self.variable_data][var_data] = array
+                # else:
+                # if len(result[0])
+                value = result[0][0]
+            self.GCM_FIELDS[field] = value
+
+        # overwrites that last special field with dict of its subfields 
+        if self.variable in self.supported_vars: 
+            # handles special variables
+            self.variable = self.supported_vars[self.variable]
+            if self.variable == "Temp":
+                self.GCM_FIELDS[self.variable] = {
+                    "MonthlyMax": self.results["GCM"][0][0][0][0][13][0][0][0], # 2D array
+                    "AnnualMax": self.results["GCM"][0][0][0][0][13][0][0][1], # 2D array
+                    "Unit": self.results["GCM"][0][0][0][0][13][0][0][2], # str
+                }
+            elif self.variable == "Precip":
+                print("CODE NOT IMPLEMENTED YET")
+        else:
             raise self.VaribleNotSupported("\n\nPlease check file name.")
 
     def __extract_info_from_file_name(self, filename):
+        '''Extracts the era and variable type from filename'''
         era, var = [], []
         start = 6 # CIMP5_---
         end = len(filename) - 4 # ---.mat
@@ -86,24 +141,14 @@ class MatFileReader(FileReader):
     # exception classes
     class VaribleNotSupported(Exception): pass
 
-def create_files_list(directory):
-    files_list = []
-    with scandir(directory) as entries:
-        for entry in entries:
-            if entry.is_file():
-                files_list.append(entry.name)
-    return files_list
 
 ################################ DRIVER CODE ################################
-mat_files_directory = "mat_files/"
-mat_file_names = create_files_list(mat_files_directory) # Comment out for testing rn
-mat_file_name = r"CMIP5_historical_tasma.mat"
+
+f1 = MatFileReader(mat_file_name)
+print(f1.get_gcm_fields())
 
 # use this to create multiple file reader objects
 # for file_name in mat_file_names: 
 #     print(file_name) # for degugging
 #     era, variable = extract_info(file_name)
 #     print(era, variable)
-
-f1 = MatFileReader(mat_file_name)
-print(f1.variable)

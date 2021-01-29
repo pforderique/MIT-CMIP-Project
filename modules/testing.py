@@ -51,10 +51,11 @@ for field, result in zip(GCM_FIELDS, results["GCM"][0][0][0][0]):
     console_string = "-"*30 + "\n"
     if not isinstance(result[0], str):
         value = str(result[0][0])
+        print(type(result[0]))
     else:
         value = str(result[0])
     GCM_FIELDS[field] = value
-    print(console_string + value)
+    # print(console_string + value)
 
 for key, val in GCM_FIELDS.items():
-    print(key, ":", val)
+    print(str(key).ljust(20) + ":" + str(val))
