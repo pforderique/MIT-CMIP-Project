@@ -6,21 +6,10 @@ Piero Orderique
 
 Learning how to use scipy.io lib to open and read mat files
 '''
-from os import scandir
 from scipy.io import loadmat
 from numpy import ndarray
 
-def create_files_list(directory):
-    files_list = []
-    with scandir(directory) as entries:
-        for entry in entries:
-            if entry.is_file():
-                files_list.append(entry.name)
-    return files_list
-
 mat_files_directory = "mat_files/"
-mat_file_names = create_files_list(mat_files_directory) # Comment out for testing rn
-mat_file_name = r"CMIP5_rcp45_pr.mat"
 
 class FileReader():
     def __init__(self, filename, directory="") -> None:
@@ -160,14 +149,4 @@ class MatFileReader(FileReader):
     # exception classes
     class VariableNotSupported(Exception): pass
 
-
-################################ DRIVER CODE ################################
-
-f1 = MatFileReader(mat_file_name)
-print(f1.get_results())
-
-# use this to create multiple file reader objects
-# for file_name in mat_file_names: 
-#     print(file_name) # for degugging
-#     era, variable = extract_info(file_name)
-#     print(era, variable)
+class HDDCDDReader(MatFileReader): pass
