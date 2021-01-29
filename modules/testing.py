@@ -8,6 +8,7 @@ Testing the mat file structure.
 Purpose: to help design file reader class in matreader.py
 '''
 from os import scandir
+from matplotlib import pyplot as plt
 from matreader import MatFileReader, mat_files_directory
 
 def create_files_list(directory):
@@ -24,8 +25,21 @@ mat_file_name = r"CMIP5_historical_tasmax.mat"
 ################################ DRIVER CODE ################################
 mfr = MatFileReader(mat_file_name)
 
-annualmax = mfr.GCM_FIELDS["Temp"]["AnnualMax"]
-decades = annualmax[:,0]
-temps = annualmax[:,1]
+annualmax = mfr.GCM_FIELDS["Temp"]["AnnualMax"] # len = 16 (# of decades captured)
+monthlymax = mfr.GCM_FIELDS["Temp"]["MonthlyMax"] # len = 192 (16 * 12 months in a year)
 
-print(decades, temps)
+def plot_annual():
+    decades = annualmax[:,0] # remember, matlab idxing starts at 1!
+    temps = annualmax[:,1]
+
+def plot_monthly():
+    decades = monthlymax[:,0] # 12 data points each decade
+    temps = monthlymax[:,2]
+
+    plt.title("Matplotlib demo") 
+    plt.xlabel("x axis caption") 
+    plt.ylabel("y axis caption") 
+    plt.plot(decades, temps, 'bo')
+    plt.show()
+
+plot_monthly()
