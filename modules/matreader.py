@@ -84,9 +84,19 @@ class MatFileReader(FileReader):
 
 
     def get_gcm_fields(self):
+        res = '''GCM FIELDS:\n'''
+        res += 'Ex: Use mfr.GCM_FIELDS["Temp"]["AnnualMax"] to get the 2D ndarray of values\n'
+        return res + self.__get_dict_items(self.GCM_FIELDS)
+
+    def __get_dict_items(self, d):
         res = '\n'
-        for key, val in self.GCM_FIELDS.items():
-            res += str(key).ljust(9) + " : " + str(val) + "\n"
+        for key, val in d.items():
+            if isinstance(val, dict):
+                res += str(key).ljust(9) + " :" + self.__get_dict_items(val)
+            elif isinstance(val, ndarray):
+                res += str(key) + " :\n" + str(val) + "\n"
+            else:
+                res += str(key).ljust(9) + " : " + str(val) + "\n"
         return res
 
     def __read_to_gcm(self):
@@ -113,7 +123,7 @@ class MatFileReader(FileReader):
                 self.GCM_FIELDS[self.variable] = {
                     "MonthlyMax": self.results["GCM"][0][0][0][0][13][0][0][0], # 2D array
                     "AnnualMax": self.results["GCM"][0][0][0][0][13][0][0][1], # 2D array
-                    "Unit": self.results["GCM"][0][0][0][0][13][0][0][2], # str
+                    "Unit": self.results["GCM"][0][0][0][0][13][0][0][2][0], # str
                 }
             elif self.variable == "Precip":
                 print("CODE NOT IMPLEMENTED YET")
