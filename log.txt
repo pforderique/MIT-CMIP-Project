@@ -9,4 +9,6 @@ we mix up orders, it could get messy again -> I'll just use a hash table.
 
 29 Jan 2021:
 Successfully implemented MatFileReader class and have it display file 
-properties/variables.
+properties/variables. Created Plotter Classes to help plot both tasmax 
+and pr files. Everything seems to be working correctly.
+Up next: messing with the HDDCDD files
