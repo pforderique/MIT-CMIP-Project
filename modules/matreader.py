@@ -218,4 +218,4 @@ class HDDCDDReader(MatFileReader):
 
 mat_file_name2 = r"CMIP5_rcp45_HDDCDD.mat"
 hfr = HDDCDDReader(mat_file_name2)
-print(hfr.get_gcm_fields())
+# print(hfr.get_gcm_fields())

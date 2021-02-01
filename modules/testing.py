@@ -51,10 +51,3 @@ def plot_monthly():
 # plt.ylim(0, 55)
 # plt.boxplot(decade_sequences, positions=[int(year) for year in decades], widths=5)
 # plt.show()
-
-decades = hfr.GCM_FIELDS["Decades"]
-
-months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
-          "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",]
-
-

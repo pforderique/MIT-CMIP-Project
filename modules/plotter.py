@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-from matreader import MatFileReader
+from matreader import MatFileReader, HDDCDDReader
 
 # OOD Factory Method:
 class MatPlotter():
@@ -44,6 +44,8 @@ class MatPlotter():
             return MatPlotterTemp(mfr=mfr)
         elif mfr.variable == "Precip":
             return MatPlotterPrecip(mfr=mfr)
+        elif mfr.variable == "HDDCDD":
+            return HDDCDDPlotter(mfr=mfr)
         else:
             raise NotImplementedError("PLOTTER DOES NOT SUPPORT " + mfr.variable)
 
@@ -141,13 +143,77 @@ class MatPlotterPrecip(MatPlotter):
 
         return self
 
-###################### TESTING #######################
-mat_file_name = r"CMIP5_rcp85_pr.mat"
-mfr = MatFileReader(mat_file_name)
+# special HDDCDD mat files
+class HDDCDDPlotter():
+    def __init__(self, mfr) -> None:
+        # set up plotter variables 
+        self.mfr = mfr
+        self.plottables = mfr.GCM_FIELDS
+        self.months = [
+            "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+        ]
 
-plotter = MatPlotter.create_plotter(mfr)
+        # plt features
+        self.BOX_WIDTH = 0.5
+        self.PT_COLOR = "orange"
+        self.BG_COLOR = "darkblue"
+        plt.figure(figsize=(7,8))
+        plt.xlabel("Month")
+        plt.ylabel(mfr.variable + " " + f'({self.plottables["Unit"]})')
+
+    def show(self):
+        plt.show()
+
+    def plot_HDD_monthly(self):
+        self.monthly_temps = self._sequence_data(self.plottables["HDDMonthlyMean"])
+        plt.title(
+            f"HDD, By Month ({self.plottables['StartYear']}-{self.plottables['EndYear']})"
+        )
+        plt.ylim(0, 1500)
+        plt.ylabel(f"Unit: {self.plottables['Unit']}")
+        plt.boxplot(
+            self.monthly_temps, 
+            labels=self.months, 
+            widths=self.BOX_WIDTH,
+        )
+        return self
+
+    def plot_CDD_monthly(self):
+        self.monthly_temps = self._sequence_data(self.plottables["HDDMonthlyMean"])
+        plt.title(
+            f"{self.plottables['Name']}\n",
+            f"CDD, By Month ({self.plottables['StartYear']}-{self.plottables['EndYear']})"
+        )
+        plt.ylim(0, 800)
+        plt.ylabel(f"Unit: {self.plottables['Unit']}")
+        plt.boxplot(
+            self.monthly_temps, 
+            labels=self.months, 
+            widths=self.BOX_WIDTH,
+        )
+        return self
+
+    def _plot_monthly(self):
+        ''' plot both HDD monthly and CDD monthly on same graph ''' 
+        # LEFT OFF HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+    def _sequence_data(self, monthlyarray):
+        ''' returns list of months with of lists containing yearly means of data '''
+        res = []
+        for idx in range(len(monthlyarray)):
+            month = monthlyarray[idx]
+            res.append(list(month))
+        return res
+
+###################### TESTING #######################
+mat_file_name = r"CMIP5_rcp45_HDDCDD.mat"
+hfr = HDDCDDReader(mat_file_name)
+
+plotter = MatPlotter.create_plotter(hfr)
+plotter.plot_HDD_monthly().show()
 # plotter.plot_all().show()
 
-plotter.plot_all().show()
+
 
 # TODO: change back fig size to (10,4) on main comp.
