@@ -12,3 +12,27 @@ Successfully implemented MatFileReader class and have it display file
 properties/variables. Created Plotter Classes to help plot both tasmax 
 and pr files. Everything seems to be working correctly.
 Up next: messing with the HDDCDD files
+
+01 Feb 2021:
+Learned something new about constructors. Ex:
+class A:
+    def __init__(self) -> None:
+        print("a made")
+        self.cook()
+    def cook(self):
+        print("A cook")
+
+class B(A):
+    def __init__(self) -> None:
+        super().__init__()
+        print("b made")
+    def cook(self):
+        print("B cook")
+
+b = B() 
+''' 
+    this prints out A made -> B cook -> B made
+    *so parent constructors will call children's methods instead 
+    of thier own if the constructor was called by child!
+''' 
+Discovered this while creating HDDCDDReader class and calling __setup()

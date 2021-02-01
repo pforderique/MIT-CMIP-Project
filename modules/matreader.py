@@ -166,12 +166,36 @@ class HDDCDDReader(FileReader):
         super().__init__(mat_file_name, directory)
         # check to make sure file is correct
         self.era, self.variable = self._extract_info_from_file_name(self.file_name)
-        if self.variable != "HDDCCDD":
+        if self.variable != "HDDCDD":
             raise TypeError("File is not an HDDCDD file.")
 
         # else load in the file for reading
         self.file = loadmat(self.path)
+        self.__setup()
+
+    def __setup(self):
+        # main results variable where info is stored
+        self.results = self.file["results"]
+
+        # initialize GCM_fields
+        self.GCM_FIELDS = {
+            'Name'          : None,
+            'HDD'           : None,
+            'CDD'           : None,
+            'StartYear'     : None,
+            'EndYear'       : None,
+            'Unit'          : None,
+            'HDDMonthlyMean': None,
+            'CDDMonthlyMean': None,
+            'Decades'       : None,
+        }
+
+        self.__read_to_gcm()
+
+    def __read_to_gcm(self):
+        print("reading!")
 
 
-mat_file = r"CMIP5_rcp45_tasmax.mat"
+mat_file = r"CMIP5_historical_HDDCDD.mat"
 hr = HDDCDDReader(mat_file)
+# print(hr.info())
