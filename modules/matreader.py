@@ -192,8 +192,3 @@ class HDDCDDReader(MatFileReader):
     def _read_in_special_fields(self):
         # override this method from parent. No special subfields that require dicts
         pass
-
-
-mat_file = r"CMIP5_historical_HDDCDD.mat"
-hr = HDDCDDReader(mat_file)
-print(hr.get_gcm_fields())
