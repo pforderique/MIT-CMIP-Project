@@ -32,18 +32,36 @@ class FileReader():
     def get_extension(self):
         return self.extension
 
+    # for mat files / HDDCDD subtype files only
+    def _extract_info_from_file_name(self, filename):
+        '''Extracts the era and variable type from filename'''
+        era, var = [], []
+        start = 6 # CIMP5_---
+        end = len(filename) - 4 # ---.mat
+        _found = False
+        for idx in range(start, end): 
+            char = filename[idx]
+            if char == '_': 
+                _found = True
+                continue
+            if not _found: 
+                era.append(char)
+            else:
+                var.append(char)
+
+        return ''.join(era), ''.join(var)
+
 class MatFileReader(FileReader):
     def __init__(self, mat_file_name, directory=mat_files_directory) -> None:
 
         # initialize data from just file name string
         super().__init__(mat_file_name, directory)
-        self.era, self.variable = self.__extract_info_from_file_name(self.file_name)
-        
+        self.era, self.variable = self._extract_info_from_file_name(self.file_name)
         
         # handle HDDCDD files by asking to use a different class
         if self.variable == "HDDCDD": 
             print('*'*30 + "\nPLEASE USE HDDCDD READER FOR THIS FILE\n" + '*'*30)
-            return
+            raise TypeError
 
         # setup rest of mat file information and attributes
         self.file = loadmat(self.path)
@@ -140,25 +158,20 @@ class MatFileReader(FileReader):
                 "\n\nPlease check file name. Unsupported varaible: " + self.variable
             )
 
-    def __extract_info_from_file_name(self, filename):
-        '''Extracts the era and variable type from filename'''
-        era, var = [], []
-        start = 6 # CIMP5_---
-        end = len(filename) - 4 # ---.mat
-        _found = False
-        for idx in range(start, end): 
-            char = filename[idx]
-            if char == '_': 
-                _found = True
-                continue
-            if not _found: 
-                era.append(char)
-            else:
-                var.append(char)
-
-        return ''.join(era), ''.join(var)
-
     # exception classes
     class VariableNotSupported(Exception): pass
 
-class HDDCDDReader(MatFileReader): pass
+class HDDCDDReader(FileReader): 
+    def __init__(self, mat_file_name, directory=mat_files_directory) -> None:     
+        super().__init__(mat_file_name, directory)
+        # check to make sure file is correct
+        self.era, self.variable = self._extract_info_from_file_name(self.file_name)
+        if self.variable != "HDDCCDD":
+            raise TypeError("File is not an HDDCDD file.")
+
+        # else load in the file for reading
+        self.file = loadmat(self.path)
+
+
+mat_file = r"CMIP5_rcp45_tasmax.mat"
+hr = HDDCDDReader(mat_file)

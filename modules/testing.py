@@ -9,7 +9,7 @@ Purpose: to help design file reader class in matreader.py
 '''
 from os import scandir
 from matplotlib import pyplot as plt
-from matreader import MatFileReader, mat_files_directory
+from matreader import MatFileReader, HDDCDDReader, mat_files_directory
 
 def create_files_list(directory):
     files_list = []
