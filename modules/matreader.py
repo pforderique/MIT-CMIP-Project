@@ -53,21 +53,23 @@ class FileReader():
 
 class MatFileReader(FileReader):
     def __init__(self, mat_file_name, directory=mat_files_directory) -> None:
-
         # initialize data from just file name string
         super().__init__(mat_file_name, directory)
         self.era, self.variable = self._extract_info_from_file_name(self.file_name)
-        
-        # handle HDDCDD files by asking to use a different class
-        if self.variable == "HDDCDD": 
-            print('*'*30 + "\nPLEASE USE HDDCDD READER FOR THIS FILE\n" + '*'*30)
-            raise TypeError
 
         # setup rest of mat file information and attributes
         self.file = loadmat(self.path)
-        self.__setup()
+        self._setup()
 
-    def __setup(self):
+    def _setup(self):
+        # handle HDDCDD files by asking to use a different class
+        if self.variable == "HDDCDD": 
+            raise TypeError(
+                "\n" + '*' * self._SCREEN_WIDTH + 
+                "\nPLEASE USE HDDCDD READER FOR THIS FILE\n" + 
+                '*' * self._SCREEN_WIDTH
+            )
+
         # main results variable where info is stored
         self.results = self.file["results"]
 
@@ -95,7 +97,7 @@ class MatFileReader(FileReader):
             'Trim'      : None,
         }
 
-        self.__read_to_gcm()
+        self._read_to_gcm()
 
     def info(self):
         ''' Return important, stored information in the file including the GCM '''
@@ -109,22 +111,22 @@ class MatFileReader(FileReader):
     def get_gcm_fields(self):
         res = "GCM FIELDS".center(self._SCREEN_WIDTH, "*")
         res += '\nEx: Use mfr.GCM_FIELDS["Temp"]["AnnualMax"] to get the 2D ndarray of values\n'
-        return res + self.__get_dict_items(self.GCM_FIELDS)
+        return res + self._get_dict_items(self.GCM_FIELDS)
 
-    def __get_dict_items(self, d):
+    def _get_dict_items(self, d):
         ''' returns 1 str of formatted items in a dictionary'''
         res = '\n'
         LEFTSPACE = 9
         for key, val in d.items():
             if isinstance(val, dict):
-                res += str(key).ljust(LEFTSPACE) + " :" + self.__get_dict_items(val)
+                res += str(key).ljust(LEFTSPACE) + " :" + self._get_dict_items(val)
             elif isinstance(val, ndarray) and val.ndim > 1:
                 res += str(key) + " :\n" + str(val) + "\n"
             else:
                 res += str(key).ljust(LEFTSPACE) + " : " + str(val) + "\n"
         return res
 
-    def __read_to_gcm(self):
+    def _read_to_gcm(self):
         ''' fills in the gcm attribute with the mat file data '''
 
         # fills in the generic information
@@ -135,6 +137,9 @@ class MatFileReader(FileReader):
                 value = result[0][0]
             self.GCM_FIELDS[field] = value
 
+        self._read_in_special_fields()
+
+    def _read_in_special_fields(self):
         # overwrites that last special field with dict of its subfields 
         if self.variable in self.supported_vars: 
             self.variable = self.supported_vars[self.variable]
@@ -161,19 +166,11 @@ class MatFileReader(FileReader):
     # exception classes
     class VariableNotSupported(Exception): pass
 
-class HDDCDDReader(FileReader): 
+class HDDCDDReader(MatFileReader): 
     def __init__(self, mat_file_name, directory=mat_files_directory) -> None:     
         super().__init__(mat_file_name, directory)
-        # check to make sure file is correct
-        self.era, self.variable = self._extract_info_from_file_name(self.file_name)
-        if self.variable != "HDDCDD":
-            raise TypeError("File is not an HDDCDD file.")
 
-        # else load in the file for reading
-        self.file = loadmat(self.path)
-        self.__setup()
-
-    def __setup(self):
+    def _setup(self):
         # main results variable where info is stored
         self.results = self.file["results"]
 
@@ -190,12 +187,13 @@ class HDDCDDReader(FileReader):
             'Decades'       : None,
         }
 
-        self.__read_to_gcm()
+        self._read_to_gcm()
 
-    def __read_to_gcm(self):
-        print("reading!")
+    def _read_in_special_fields(self):
+        # override this method from parent. No special subfields that require dicts
+        pass
 
 
 mat_file = r"CMIP5_historical_HDDCDD.mat"
 hr = HDDCDDReader(mat_file)
-# print(hr.info())
+print(hr.get_gcm_fields())
