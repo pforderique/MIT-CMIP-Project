@@ -20,13 +20,16 @@ def create_files_list(directory):
     return files_list
 
 mat_file_names = create_files_list(mat_files_directory) 
-mat_file_name = r"CMIP5_rcp45_tasmax.mat"
+mat_file_name1 = r"CMIP5_rcp45_tasmax.mat"
+mat_file_name2 = r"CMIP5_rcp45_HDDCDD.mat"
 
 ################################ DRIVER CODE ################################
-mfr = MatFileReader(mat_file_name)
-
+mfr = MatFileReader(mat_file_name1)
 annualmax = mfr.GCM_FIELDS["Temp"]["AnnualMax"] # len = 16 (# of decades captured)
 monthlymax = mfr.GCM_FIELDS["Temp"]["MonthlyMax"] # len = 192 (16 * 12 months in a year)
+
+hfr = HDDCDDReader(mat_file_name2)
+print(hfr.get_gcm_fields())
 
 def plot_annual():
     decades = annualmax[:,0] # remember, matlab idxing starts at 1!
@@ -48,3 +51,10 @@ def plot_monthly():
 # plt.ylim(0, 55)
 # plt.boxplot(decade_sequences, positions=[int(year) for year in decades], widths=5)
 # plt.show()
+
+decades = hfr.GCM_FIELDS["Decades"]
+
+months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+          "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",]
+
+

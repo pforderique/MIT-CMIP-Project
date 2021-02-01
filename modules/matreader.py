@@ -131,6 +131,10 @@ class MatFileReader(FileReader):
 
         # fills in the generic information
         for field, result in zip(self.GCM_FIELDS, self.results["GCM"][0][0][0][0]): 
+            # if field == "Decades":
+            #     value = self._delistify(arr=result)
+            # elif field == "HDD" or field == "CDD" or field == "HDDMonthlyMean":
+            #     value = result
             if isinstance(result[0], str) or len(result[0]) > 1:
                 value = result[0]
             else:
@@ -189,6 +193,29 @@ class HDDCDDReader(MatFileReader):
 
         self._read_to_gcm()
 
-    def _read_in_special_fields(self):
-        # override this method from parent. No special subfields that require dicts
-        pass
+    def _read_to_gcm(self):
+        ''' fills in the gcm attribute with the HDDCDD mat file data '''
+
+        # fills in the generic information
+        for field, result in zip(self.GCM_FIELDS, self.results["GCM"][0][0][0][0]): 
+            if field == "Unit" or field == "Name":
+                value = result[0]
+            elif field == "Decades":
+                value = self._delistify(result)
+            elif len(result[0]) < 2:
+                value = result[0][0]
+            else:
+                value = result
+            self.GCM_FIELDS[field] = value
+
+    def _delistify(self, arr):
+        ''' delistifies an ndarry of ndarrays
+            Ex: [[2020], [2021]] -> [2020, 2021] '''
+        arr = list(arr)
+        for idx in range(len(arr)):
+            arr[idx] = arr[idx][0]
+        return arr
+
+mat_file_name2 = r"CMIP5_rcp45_HDDCDD.mat"
+hfr = HDDCDDReader(mat_file_name2)
+print(hfr.get_gcm_fields())
