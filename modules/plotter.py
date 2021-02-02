@@ -166,37 +166,72 @@ class HDDCDDPlotter():
         plt.show()
 
     def plot_HDD_monthly(self):
-        self.monthly_temps = self._sequence_data(self.plottables["HDDMonthlyMean"])
+        monthly_temps = self._sequence_data(self.plottables["HDDMonthlyMean"])
         plt.title(
+            f"{self.plottables['Name']}\n" +
             f"HDD, By Month ({self.plottables['StartYear']}-{self.plottables['EndYear']})"
         )
         plt.ylim(0, 1500)
         plt.ylabel(f"Unit: {self.plottables['Unit']}")
         plt.boxplot(
-            self.monthly_temps, 
+            monthly_temps, 
             labels=self.months, 
             widths=self.BOX_WIDTH,
         )
         return self
 
     def plot_CDD_monthly(self):
-        self.monthly_temps = self._sequence_data(self.plottables["HDDMonthlyMean"])
+        monthly_temps = self._sequence_data(self.plottables["CDDMonthlyMean"])
         plt.title(
-            f"{self.plottables['Name']}\n",
+            f"{self.plottables['Name']}\n" +
             f"CDD, By Month ({self.plottables['StartYear']}-{self.plottables['EndYear']})"
         )
         plt.ylim(0, 800)
         plt.ylabel(f"Unit: {self.plottables['Unit']}")
         plt.boxplot(
-            self.monthly_temps, 
+            monthly_temps, 
             labels=self.months, 
             widths=self.BOX_WIDTH,
         )
         return self
 
-    def _plot_monthly(self):
-        ''' plot both HDD monthly and CDD monthly on same graph ''' 
-        # LEFT OFF HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    def plot_monthly(self):
+        ''' plot both HDD monthly and CDD monthly side by side ''' 
+        # override all the plt data we just made my closing that window
+        plt.close()
+
+        # create subplot
+        fig, (ax1, ax2) = plt.subplots(1, 2)
+        fig.suptitle(self.plottables["Name"])
+        fig.set_size_inches(11.5, 7)
+
+        # plot HDD monthly mean
+        color = 'tab:blue'
+        monthly_temps = self._sequence_data(self.plottables["HDDMonthlyMean"])
+        ax1.set_title(f"HDD, By Month ({self.plottables['StartYear']}-{self.plottables['EndYear']})")
+        ax1.set_ylim(0, 1500)
+        ax1.boxplot(
+            monthly_temps,
+            labels=self.months,
+            widths=self.BOX_WIDTH
+        )
+        ax1.tick_params(axis='x', labelcolor=color)
+        ax1.tick_params(axis='y', labelcolor=color)
+
+        # plot CDD monthly mean next to it
+        color = 'tab:orange'
+        monthly_temps = self._sequence_data(self.plottables["CDDMonthlyMean"])
+        ax2.set_title(f"CDD, By Month ({self.plottables['StartYear']}-{self.plottables['EndYear']})")
+        ax2.set_ylim(0, 800)
+        ax2.boxplot(
+            monthly_temps,
+            labels=self.months,
+            widths=self.BOX_WIDTH,
+        )
+        ax2.tick_params(axis='x', labelcolor=color)
+        ax2.tick_params(axis='y', labelcolor=color)
+
+        return self
 
     def _sequence_data(self, monthlyarray):
         ''' returns list of months with of lists containing yearly means of data '''
@@ -207,13 +242,11 @@ class HDDCDDPlotter():
         return res
 
 ###################### TESTING #######################
-mat_file_name = r"CMIP5_rcp45_HDDCDD.mat"
+mat_file_name = r"CMIP5_historical_HDDCDD.mat"
 hfr = HDDCDDReader(mat_file_name)
+print(hfr.get_gcm_fields())
 
 plotter = MatPlotter.create_plotter(hfr)
-plotter.plot_HDD_monthly().show()
-# plotter.plot_all().show()
-
-
+plotter.plot_monthly().show()
 
 # TODO: change back fig size to (10,4) on main comp.
