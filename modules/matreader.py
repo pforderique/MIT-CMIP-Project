@@ -51,6 +51,18 @@ class FileReader():
 
         return ''.join(era), ''.join(var)
 
+    @staticmethod
+    def create_file_reader(filename, directory=mat_files_directory):
+        f = FileReader("")
+        era, var = f._extract_info_from_file_name(filename=filename)
+        del f
+        if var == "tasmax" or var == "pr":
+            return MatFileReader(filename, directory=directory)
+        elif var == "HDDCDD":
+            return HDDCDDReader(filename, directory=directory)
+        else: 
+            return None
+        
 class MatFileReader(FileReader):
     def __init__(self, mat_file_name, directory=mat_files_directory) -> None:
         # initialize data from just file name string
@@ -128,13 +140,8 @@ class MatFileReader(FileReader):
 
     def _read_to_gcm(self):
         ''' fills in the gcm attribute with the mat file data '''
-
         # fills in the generic information
         for field, result in zip(self.GCM_FIELDS, self.results["GCM"][0][0][0][0]): 
-            # if field == "Decades":
-            #     value = self._delistify(arr=result)
-            # elif field == "HDD" or field == "CDD" or field == "HDDMonthlyMean":
-            #     value = result
             if isinstance(result[0], str) or len(result[0]) > 1:
                 value = result[0]
             else:
@@ -216,6 +223,6 @@ class HDDCDDReader(MatFileReader):
             arr[idx] = arr[idx][0]
         return arr
 
-mat_file_name2 = r"CMIP5_rcp45_HDDCDD.mat"
-hfr = HDDCDDReader(mat_file_name2)
-# print(hfr.get_gcm_fields())
+mat_file_name = r"CMIP5_rcp45_HDDCDD.mat"
+hfr = FileReader.create_file_reader(mat_file_name)
+print(hfr.get_gcm_fields())
