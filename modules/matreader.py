@@ -55,6 +55,18 @@ class FileReader():
 
         return ''.join(era), ''.join(var)
 
+    def _get_dict_items(self, d, LEFTSPACE=9):
+        ''' returns 1 str of formatted items in a dictionary'''
+        res = '\n'
+        for key, val in d.items():
+            if isinstance(val, dict):
+                res += str(key).ljust(LEFTSPACE) + " :" + self._get_dict_items(val)
+            elif isinstance(val, ndarray) and val.ndim > 1:
+                res += str(key) + " :\n" + str(val) + "\n"
+            else:
+                res += str(key).ljust(LEFTSPACE) + " : " + str(val) + "\n"
+        return res
+
     @staticmethod
     def create_file_reader(filename, directory=mat_files_directory, index=0):
         f = FileReader("")
@@ -129,19 +141,6 @@ class MatFileReader(FileReader):
         res = "GCM FIELDS".center(self._SCREEN_WIDTH, "*")
         res += '\nEx: Use mfr.GCM_FIELDS["Temp"]["AnnualMax"] to get the 2D ndarray of values\n'
         return res + self._get_dict_items(self.GCM_FIELDS)
-
-    def _get_dict_items(self, d):
-        ''' returns 1 str of formatted items in a dictionary'''
-        res = '\n'
-        LEFTSPACE = 9
-        for key, val in d.items():
-            if isinstance(val, dict):
-                res += str(key).ljust(LEFTSPACE) + " :" + self._get_dict_items(val)
-            elif isinstance(val, ndarray) and val.ndim > 1:
-                res += str(key) + " :\n" + str(val) + "\n"
-            else:
-                res += str(key).ljust(LEFTSPACE) + " : " + str(val) + "\n"
-        return res
 
     def _read_to_gcm(self):
         ''' fills in the gcm attribute with the mat file data '''
@@ -230,17 +229,39 @@ class HDDCDDReader(MatFileReader):
 
 class MatDocumentReader(FileReader):
     ''' takes in a .mat document can present names of ALL FILES '''
-    def __init__(self, filename, directory="", index=0) -> None:
+    def __init__(self, filename, directory=mat_files_directory, index=0) -> None:
         super().__init__(filename, directory, index)
+
         self.document = loadmat(self.path)
+        self.results = self.document['results']
+        self.GCMS = self.results["GCM"][0][0][0]
 
-    def gcm_options(self):
-        pass
+        self._create_models()
 
-    def _create_gcms_dict(self):
-        pass
+    def model_options(self):
+        ''' 
+        returns string of all models included in file and their indexes
+        '''
+        res = "GCM MODELS INCLUDED".center(self._SCREEN_WIDTH, "*")
+        res += '\nUse these indexes to create file reader for specific model\n'
+        return res + self._get_dict_items(self.models, LEFTSPACE=3)
+
+    def _create_models(self):
+        self.models = dict()
+        for idx in range(len(self.GCMS)):
+            file = self.GCMS[idx][0][0]
+            model = self._get_model_from_file(file)
+            self.models[idx] = model
+
+    def _get_model_from_file(self, file):
+        ''' returns model (ex: CCSM4) from file '''
+        return file.split("_")[2]
 
 if __name__ == "__main__":
     mat_file_name = r"CMIP5_historical_tasmax.mat"
-    fr = FileReader.create_file_reader(mat_file_name, index=3)
-    print(fr.info())
+    # fr = FileReader.create_file_reader(mat_file_name, index=3)
+    # print(fr.info())
+
+    md = MatDocumentReader(mat_file_name)
+    print(md.model_options())
+    
