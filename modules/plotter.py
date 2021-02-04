@@ -20,6 +20,7 @@ class MatPlotter():
     def __init__(self, mfr) -> None:
         # set up plotter variables 
         self.mfr = mfr
+        self.mfr_info = f"({self.mfr.model}, {self.mfr.variable}, {self.mfr.era})"
         self.plottables = mfr.GCM_FIELDS[mfr.variable]
 
         # plt features
@@ -73,14 +74,14 @@ class MatPlotterTemp(MatPlotter):
 
     def plot_annual(self):
         temps = self.annualmax[:,1]
-        plt.title("Annual Max Temperature")
+        plt.title("Annual Max Temperature " + self.mfr_info)
         plt.plot(self.decades_list, temps, 'o', color=self.PT_COLOR)
         return self
 
     def plot_monthly(self):
         super().plot_monthly()
         plt.ylim(0, 55)
-        plt.title("Monthly Max by Decade")
+        plt.title(f"Monthly Max by Decade " + self.mfr_info)
         return self
 
     def plot_all(self):
@@ -257,8 +258,8 @@ class HDDCDDPlotter():
 
 ###################### TESTING #######################
 if __name__ == "__main__":
-    mat_file_name = r"CMIP5_rcp85_tasmax.mat"
-    fr = FileReader.create_file_reader(mat_file_name, index=0)
+    mat_file_name = r"CMIP5_rcp85_HDDCDD.mat"
+    fr = FileReader.create_file_reader(mat_file_name, index=4)
     # print(hfr.get_gcm_fields())
 
     plotter = MatPlotter.create_plotter(fr)

@@ -44,7 +44,3 @@ def plot_monthly():
     plt.ylabel("y axis caption") 
     plt.plot(decades, temps, 'bo')
     plt.show()
-
-from scipy.io import loadmat
-file = loadmat("C:/Users/fabri/OneDrive/Documents/ArcGIS/Projects/MITOS_CIMP5_Project/mat_files/"+mat_file_name1)
-# print(file['results'][0][0])
