@@ -10,6 +10,10 @@ Plotter classes take in MatFileReaders and plot relevant info
 import matplotlib.pyplot as plt
 from matreader import FileReader
 
+# I keep having to change figsize bc of different resolution screens
+FIGSIZE1 = (10,4)
+FIGSIZE2 = (7,8)
+
 # OOD Factory Method:
 class MatPlotter():
     def __init__(self, mfr) -> None:
@@ -21,7 +25,7 @@ class MatPlotter():
         self.BOX_WIDTH = 5
         self.PT_COLOR = "orange"
         self.BG_COLOR = "darkblue"
-        plt.figure(figsize=(5,2))
+        plt.figure(figsize=FIGSIZE1)
         plt.xlabel("Year")
         plt.ylabel(mfr.variable + " " + f'({self.plottables["Unit"]})')
 
@@ -115,7 +119,7 @@ class MatPlotterPrecip(MatPlotter):
         plt.close()
         
         # create subplots for multiple plots in one
-        fig, ax1 = plt.subplots(1, 1, figsize=(5,2))
+        fig, ax1 = plt.subplots(1, 1, figsize=FIGSIZE1)
 
         # first plot the monthly mean
         self.plot_monthly()
@@ -167,7 +171,7 @@ class HDDCDDPlotter():
         self.BOX_WIDTH = 0.5
         self.PT_COLOR = "orange"
         self.BG_COLOR = "darkblue"
-        plt.figure(figsize=(3,4))
+        plt.figure(figsize=FIGSIZE2)
         plt.xlabel("Month")
         plt.ylabel(mfr.variable + " " + f'({self.plottables["Unit"]})')
 
@@ -253,8 +257,8 @@ class HDDCDDPlotter():
 ###################### TESTING #######################
 # TODO: change back fig size to (10,4) on main comp.
 if __name__ == "__main__":
-    mat_file_name = r"CMIP5_rcp85_HDDCDD.mat"
-    fr = FileReader.create_file_reader(mat_file_name)
+    mat_file_name = r"CMIP5_rcp85_tasmax.mat"
+    fr = FileReader.create_file_reader(mat_file_name, index=0)
     # print(hfr.get_gcm_fields())
 
     plotter = MatPlotter.create_plotter(fr)

@@ -67,6 +67,10 @@ class FileReader():
                 res += str(key).ljust(LEFTSPACE) + " : " + str(val) + "\n"
         return res
 
+    def _get_model_from_file(self, file):
+        ''' returns model (ex: CCSM4) from file '''
+        return file.split("_")[2]
+
     @staticmethod
     def create_file_reader(filename, directory=mat_files_directory, index=0):
         f = FileReader("")
@@ -135,7 +139,7 @@ class MatFileReader(FileReader):
     def get_results(self):
         ''' return a summary of the results field '''
         res = "RESULTS".center(self._SCREEN_WIDTH,"*")
-        return res + f"\nEra: {self.era}\nVariable: {self.variable}\nGCM: ({len(self.GCM_FIELDS)} fields)\n"
+        return res + f"\nEra: {self.era}\nVariable: {self.variable}\nGCM Model: {self.model}\nGCM: ({len(self.GCM_FIELDS)} fields)\n"
 
     def get_gcm_fields(self):
         res = "GCM FIELDS".center(self._SCREEN_WIDTH, "*")
@@ -151,6 +155,9 @@ class MatFileReader(FileReader):
             else:
                 value = result[0][0]
             self.GCM_FIELDS[field] = value
+
+        # specify model of the GCM
+        self.model = self._get_model_from_file(self.GCM_FIELDS["File"])
 
         self._read_in_special_fields()
 
@@ -239,9 +246,7 @@ class MatDocumentReader(FileReader):
         self._create_models()
 
     def model_options(self):
-        ''' 
-        returns string of all models included in file and their indexes
-        '''
+        ''' returns string of all models included in file and their indexes '''
         res = "GCM MODELS INCLUDED".center(self._SCREEN_WIDTH, "*")
         res += '\nUse these indexes to create file reader for specific model\n'
         return res + self._get_dict_items(self.models, LEFTSPACE=3)
@@ -253,15 +258,12 @@ class MatDocumentReader(FileReader):
             model = self._get_model_from_file(file)
             self.models[idx] = model
 
-    def _get_model_from_file(self, file):
-        ''' returns model (ex: CCSM4) from file '''
-        return file.split("_")[2]
-
 if __name__ == "__main__":
-    mat_file_name = r"CMIP5_historical_tasmax.mat"
-    # fr = FileReader.create_file_reader(mat_file_name, index=3)
-    # print(fr.info())
+    mat_file_name = r"CMIP5_historical_pr.mat"
 
     md = MatDocumentReader(mat_file_name)
-    print(md.model_options())
+    # print(md.model_options())
+
+    fr = FileReader.create_file_reader(mat_file_name, index=4)
+    print(fr.info())
     
