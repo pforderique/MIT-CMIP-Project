@@ -1,5 +1,14 @@
+'''
+Plotter
+
+Piero Orderique 
+30 Jan 2021
+
+Plotter classes take in MatFileReaders and plot relevant info
+'''
+
 import matplotlib.pyplot as plt
-from matreader import MatFileReader, HDDCDDReader
+from matreader import FileReader
 
 # OOD Factory Method:
 class MatPlotter():
@@ -158,7 +167,7 @@ class HDDCDDPlotter():
         self.BOX_WIDTH = 0.5
         self.PT_COLOR = "orange"
         self.BG_COLOR = "darkblue"
-        plt.figure(figsize=(7,8))
+        plt.figure(figsize=(3,4))
         plt.xlabel("Month")
         plt.ylabel(mfr.variable + " " + f'({self.plottables["Unit"]})')
 
@@ -242,11 +251,11 @@ class HDDCDDPlotter():
         return res
 
 ###################### TESTING #######################
-mat_file_name = r"CMIP5_historical_HDDCDD.mat"
-hfr = HDDCDDReader(mat_file_name)
-print(hfr.get_gcm_fields())
-
-plotter = MatPlotter.create_plotter(hfr)
-plotter.plot_monthly().show()
-
 # TODO: change back fig size to (10,4) on main comp.
+if __name__ == "__main__":
+    mat_file_name = r"CMIP5_rcp85_HDDCDD.mat"
+    fr = FileReader.create_file_reader(mat_file_name)
+    # print(hfr.get_gcm_fields())
+
+    plotter = MatPlotter.create_plotter(fr)
+    plotter.plot_monthly().show() 

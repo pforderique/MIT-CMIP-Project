@@ -12,11 +12,15 @@ from numpy import ndarray
 mat_files_directory = "mat_files/"
 
 class FileReader():
-    def __init__(self, filename, directory="") -> None:
+    def __init__(self, filename, directory="", index=0) -> None:
         self.path = directory + filename
         self.file_name = filename
         self.extension = filename[filename.find("."):] # caution! error if '.' in name
         self._SCREEN_WIDTH = 40
+        self.index = index
+
+    def set_index(self, index):
+        self.index = index
 
     def get_file_info(self):
         ''' Return information on file path, extension, and name '''
@@ -52,21 +56,21 @@ class FileReader():
         return ''.join(era), ''.join(var)
 
     @staticmethod
-    def create_file_reader(filename, directory=mat_files_directory):
+    def create_file_reader(filename, directory=mat_files_directory, index=0):
         f = FileReader("")
         era, var = f._extract_info_from_file_name(filename=filename)
         del f
         if var == "tasmax" or var == "pr":
-            return MatFileReader(filename, directory=directory)
+            return MatFileReader(filename, directory=directory, index=index)
         elif var == "HDDCDD":
-            return HDDCDDReader(filename, directory=directory)
+            return HDDCDDReader(filename, directory=directory, index=index)
         else: 
             return None
         
 class MatFileReader(FileReader):
-    def __init__(self, mat_file_name, directory=mat_files_directory) -> None:
+    def __init__(self, mat_file_name, directory=mat_files_directory, index=0) -> None:
         # initialize data from just file name string
-        super().__init__(mat_file_name, directory)
+        super().__init__(mat_file_name, directory, index)
         self.era, self.variable = self._extract_info_from_file_name(self.file_name)
 
         # setup rest of mat file information and attributes
@@ -93,6 +97,7 @@ class MatFileReader(FileReader):
         }
 
         # initialize GCM_fields
+        self.GCM = self.results["GCM"][0][0][0][self.index] # WHICH GCM we are indexing to
         self.GCM_FIELDS = {
             'File'      : None,
             'Lat'       : None,
@@ -140,8 +145,8 @@ class MatFileReader(FileReader):
 
     def _read_to_gcm(self):
         ''' fills in the gcm attribute with the mat file data '''
-        # fills in the generic information
-        for field, result in zip(self.GCM_FIELDS, self.results["GCM"][0][0][0][0]): 
+        # fills in the generic information - now with index that user chooses from
+        for field, result in zip(self.GCM_FIELDS, self.GCM): 
             if isinstance(result[0], str) or len(result[0]) > 1:
                 value = result[0]
             else:
@@ -158,28 +163,28 @@ class MatFileReader(FileReader):
             # handles each case:
             if self.variable == "Precip":
                 self.GCM_FIELDS[self.variable] = {
-                    "MonthlyMean": self.results["GCM"][0][0][0][0][13][0][0][0], # 2D array
-                    "AnnualMean": self.results["GCM"][0][0][0][0][13][0][0][1], # 2D array
-                    "AnnualMax": self.results["GCM"][0][0][0][0][13][0][0][2], # 2D array
-                    "Unit": self.results["GCM"][0][0][0][0][13][0][0][3][0], # str
+                    "MonthlyMean": self.GCM[13][0][0][0], # 2D array
+                    "AnnualMean": self.GCM[13][0][0][1], # 2D array
+                    "AnnualMax": self.GCM[13][0][0][2], # 2D array
+                    "Unit": self.GCM[13][0][0][3][0], # str
                 }
             elif self.variable == "Temp":
                 self.GCM_FIELDS[self.variable] = {
-                    "MonthlyMax": self.results["GCM"][0][0][0][0][13][0][0][0], # 2D array
-                    "AnnualMax": self.results["GCM"][0][0][0][0][13][0][0][1], # 2D array
-                    "Unit": self.results["GCM"][0][0][0][0][13][0][0][2][0], # str
+                    "MonthlyMax": self.GCM[13][0][0][0], # 2D array
+                    "AnnualMax": self.GCM[13][0][0][1], # 2D array
+                    "Unit": self.GCM[13][0][0][2][0], # str
                 }
         else:                                                                   
             raise self.VariableNotSupported(
                 "\n\nPlease check file name. Unsupported varaible: " + self.variable
             )
 
-    # exception classes
+    # exception classes 
     class VariableNotSupported(Exception): pass
 
 class HDDCDDReader(MatFileReader): 
-    def __init__(self, mat_file_name, directory=mat_files_directory) -> None:     
-        super().__init__(mat_file_name, directory)
+    def __init__(self, mat_file_name, directory=mat_files_directory, index=0) -> None:     
+        super().__init__(mat_file_name, directory, index)
 
     def _setup(self):
         # main results variable where info is stored
@@ -204,7 +209,7 @@ class HDDCDDReader(MatFileReader):
         ''' fills in the gcm attribute with the HDDCDD mat file data '''
 
         # fills in the generic information
-        for field, result in zip(self.GCM_FIELDS, self.results["GCM"][0][0][0][0]): 
+        for field, result in zip(self.GCM_FIELDS, self.GCM): 
             if field == "Unit" or field == "Name":
                 value = result[0]
             elif field == "Decades":
@@ -223,6 +228,19 @@ class HDDCDDReader(MatFileReader):
             arr[idx] = arr[idx][0]
         return arr
 
-mat_file_name = r"CMIP5_rcp45_HDDCDD.mat"
-hfr = FileReader.create_file_reader(mat_file_name)
-print(hfr.get_gcm_fields())
+class MatDocumentReader(FileReader):
+    ''' takes in a .mat document can present names of ALL FILES '''
+    def __init__(self, filename, directory="", index=0) -> None:
+        super().__init__(filename, directory, index)
+        self.document = loadmat(self.path)
+
+    def gcm_options(self):
+        pass
+
+    def _create_gcms_dict(self):
+        pass
+
+if __name__ == "__main__":
+    mat_file_name = r"CMIP5_historical_tasmax.mat"
+    fr = FileReader.create_file_reader(mat_file_name, index=3)
+    print(fr.info())

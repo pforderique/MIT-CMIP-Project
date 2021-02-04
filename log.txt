@@ -21,14 +21,12 @@ class A:
         self.cook()
     def cook(self):
         print("A cook")
-
 class B(A):
     def __init__(self) -> None:
         super().__init__()
         print("b made")
     def cook(self):
         print("B cook")
-
 b = B() 
 ''' 
     this prints out A made -> B cook -> B made
@@ -36,3 +34,17 @@ b = B()
     of thier own if the constructor was called by child!
 ''' 
 Discovered this while creating HDDCDDReader class and calling __setup()
+
+04 Feb 2021:
+Discovered that file['results']['GCM] was really a structure containing 
+a LOT more GCMS. I was indexing into the first one w/ ["GCM"][0][0][0][0] 
+but really there are a number of gcms to be indexed to like 
+["GCM"][0][0][0][1], ["GCM"][0][0][0][2], and so on. 
+Idea:
+    Change the GCM_FIELDS variable to GCMS dict of all gcms?
+    
+    OR we can keep this and simply make a another class that presents a 
+    list of all model types in a file. This will give us a visual way to 
+    see which index belongs to which model type (ACCESS1-0, ACCESS1-3, etc)
+    All we have to do is include an optional parameter in our MatFileReader
+    class that accepts an index (default index 0) to read into.
