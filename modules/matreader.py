@@ -18,6 +18,7 @@ class FileReader():
         self.extension = filename[filename.find("."):] # caution! error if '.' in name
         self._SCREEN_WIDTH = 40
         self.index = index
+        self.era, self.variable = self._extract_info_from_file_name(self.file_name)
 
     def set_index(self, index):
         self.index = index
@@ -76,18 +77,17 @@ class FileReader():
         f = FileReader("")
         era, var = f._extract_info_from_file_name(filename=filename)
         del f
-        if var == "tasmax" or var == "pr":
+        if var == "tasmax" or var == "pr" or var == "tasmin":
             return MatFileReader(filename, directory=directory, index=index)
         elif var == "HDDCDD":
             return HDDCDDReader(filename, directory=directory, index=index)
         else: 
-            return None
+            raise NotImplementedError(f"Variable {var} not implemented.")
         
 class MatFileReader(FileReader):
     def __init__(self, mat_file_name, directory=mat_files_directory, index=0) -> None:
         # initialize data from just file name string
         super().__init__(mat_file_name, directory, index)
-        self.era, self.variable = self._extract_info_from_file_name(self.file_name)
 
         # setup rest of mat file information and attributes
         self.file = loadmat(self.path)
@@ -109,7 +109,7 @@ class MatFileReader(FileReader):
         self.supported_vars = {
             "pr"     : "Precip",
             "tasmax" : "Temp",
-            "tasmin" : "?",          # supported, but these files don't have a sub struct?
+            "tasmin" : "TempMin",          # supported, but these files don't have a sub struct?
         }
 
         # initialize GCM_fields
@@ -159,7 +159,8 @@ class MatFileReader(FileReader):
         # specify model of the GCM
         self.model = self._get_model_from_file(self.GCM_FIELDS["File"])
 
-        self._read_in_special_fields()
+        if self.variable != "tasmin":
+            self._read_in_special_fields()
 
     def _read_in_special_fields(self):
         # overwrites that last special field with dict of its subfields 
@@ -258,14 +259,17 @@ class MatDocumentReader(FileReader):
     def _create_models(self):
         self.models = dict()
         for idx in range(len(self.GCMS)):
-            file = self.GCMS[idx][0][0]
-            model = self._get_model_from_file(file)
+            if self.variable == "HDDCDD":
+                model = self.GCMS[idx][0][0]
+            else:
+                file = self.GCMS[idx][0][0]
+                model = self._get_model_from_file(file)
             self.models[idx] = model
 
 if __name__ == "__main__":
-    mat_file_name = r"CMIP5_historical_HDDCDD.mat"
+    mat_file_name = r"CMIP5_historical_tasmin.mat"
 
-    # md = MatDocumentReader(mat_file_name)
+    md = MatDocumentReader(mat_file_name)
     # print(md.model_options())
 
     fr = FileReader.create_file_reader(mat_file_name, index=4)
