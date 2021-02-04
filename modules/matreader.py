@@ -197,6 +197,7 @@ class HDDCDDReader(MatFileReader):
         self.results = self.file["results"]
 
         # initialize GCM_fields
+        self.GCM = self.results["GCM"][0][0][0][self.index] # WHICH GCM we are indexing to
         self.GCM_FIELDS = {
             'Name'          : None,
             'HDD'           : None,
@@ -225,6 +226,9 @@ class HDDCDDReader(MatFileReader):
             else:
                 value = result
             self.GCM_FIELDS[field] = value
+
+        # specify model of the GCM
+        self.model = self.GCM_FIELDS["Name"]
 
     def _delistify(self, arr):
         ''' delistifies an ndarry of ndarrays
@@ -259,9 +263,9 @@ class MatDocumentReader(FileReader):
             self.models[idx] = model
 
 if __name__ == "__main__":
-    mat_file_name = r"CMIP5_historical_pr.mat"
+    mat_file_name = r"CMIP5_historical_HDDCDD.mat"
 
-    md = MatDocumentReader(mat_file_name)
+    # md = MatDocumentReader(mat_file_name)
     # print(md.model_options())
 
     fr = FileReader.create_file_reader(mat_file_name, index=4)

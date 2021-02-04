@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 from matreader import FileReader
 
 # I keep having to change figsize bc of different resolution screens
+# *change back fig size to (10,4) on main comp.
 FIGSIZE1 = (10,4)
 FIGSIZE2 = (7,8)
 
@@ -255,7 +256,6 @@ class HDDCDDPlotter():
         return res
 
 ###################### TESTING #######################
-# TODO: change back fig size to (10,4) on main comp.
 if __name__ == "__main__":
     mat_file_name = r"CMIP5_rcp85_tasmax.mat"
     fr = FileReader.create_file_reader(mat_file_name, index=0)
