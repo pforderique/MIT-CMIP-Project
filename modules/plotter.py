@@ -1,18 +1,32 @@
+'''
+Plotter
+
+Piero Orderique 
+30 Jan 2021
+
+Plotter classes take in MatFileReaders and plot relevant info
+'''
+
 import matplotlib.pyplot as plt
-from matreader import MatFileReader, HDDCDDReader
+
+# I keep having to change figsize bc of different resolution screens
+# *change back fig size to (10,4) on main comp.
+FIGSIZE1 = (10,4)
+FIGSIZE2 = (7,8)
 
 # OOD Factory Method:
 class MatPlotter():
     def __init__(self, mfr) -> None:
         # set up plotter variables 
         self.mfr = mfr
+        self.mfr_info = f"({self.mfr.model}, {self.mfr.variable}, {self.mfr.era})"
         self.plottables = mfr.GCM_FIELDS[mfr.variable]
 
         # plt features
         self.BOX_WIDTH = 5
         self.PT_COLOR = "orange"
         self.BG_COLOR = "darkblue"
-        plt.figure(figsize=(5,2))
+        plt.figure(figsize=FIGSIZE1)
         plt.xlabel("Year")
         plt.ylabel(mfr.variable + " " + f'({self.plottables["Unit"]})')
 
@@ -59,14 +73,14 @@ class MatPlotterTemp(MatPlotter):
 
     def plot_annual(self):
         temps = self.annualmax[:,1]
-        plt.title("Annual Max Temperature")
+        plt.title("Annual Max Temperature " + self.mfr_info)
         plt.plot(self.decades_list, temps, 'o', color=self.PT_COLOR)
         return self
 
     def plot_monthly(self):
         super().plot_monthly()
         plt.ylim(0, 55)
-        plt.title("Monthly Max by Decade")
+        plt.title(f"Monthly Max by Decade " + self.mfr_info)
         return self
 
     def plot_all(self):
@@ -106,7 +120,7 @@ class MatPlotterPrecip(MatPlotter):
         plt.close()
         
         # create subplots for multiple plots in one
-        fig, ax1 = plt.subplots(1, 1, figsize=(5,2))
+        fig, ax1 = plt.subplots(1, 1, figsize=FIGSIZE1)
 
         # first plot the monthly mean
         self.plot_monthly()
@@ -158,7 +172,7 @@ class HDDCDDPlotter():
         self.BOX_WIDTH = 0.5
         self.PT_COLOR = "orange"
         self.BG_COLOR = "darkblue"
-        plt.figure(figsize=(7,8))
+        plt.figure(figsize=FIGSIZE2)
         plt.xlabel("Month")
         plt.ylabel(mfr.variable + " " + f'({self.plottables["Unit"]})')
 
@@ -242,11 +256,10 @@ class HDDCDDPlotter():
         return res
 
 ###################### TESTING #######################
-mat_file_name = r"CMIP5_historical_HDDCDD.mat"
-hfr = HDDCDDReader(mat_file_name)
-print(hfr.get_gcm_fields())
+# if __name__ == "__main__":
+#     mat_file_name = r"CMIP5_rcp85_HDDCDD.mat"
+#     fr = FileReader.create_file_reader(mat_file_name, index=4)
+#     # print(hfr.get_gcm_fields())
 
-plotter = MatPlotter.create_plotter(hfr)
-plotter.plot_monthly().show()
-
-# TODO: change back fig size to (10,4) on main comp.
+#     plotter = MatPlotter.create_plotter(fr)
+#     plotter.plot_monthly().show() 
