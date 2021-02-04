@@ -8,7 +8,6 @@ Plotter classes take in MatFileReaders and plot relevant info
 '''
 
 import matplotlib.pyplot as plt
-from matreader import FileReader
 
 # I keep having to change figsize bc of different resolution screens
 # *change back fig size to (10,4) on main comp.
@@ -257,10 +256,10 @@ class HDDCDDPlotter():
         return res
 
 ###################### TESTING #######################
-if __name__ == "__main__":
-    mat_file_name = r"CMIP5_rcp85_HDDCDD.mat"
-    fr = FileReader.create_file_reader(mat_file_name, index=4)
-    # print(hfr.get_gcm_fields())
+# if __name__ == "__main__":
+#     mat_file_name = r"CMIP5_rcp85_HDDCDD.mat"
+#     fr = FileReader.create_file_reader(mat_file_name, index=4)
+#     # print(hfr.get_gcm_fields())
 
-    plotter = MatPlotter.create_plotter(fr)
-    plotter.plot_monthly().show() 
+#     plotter = MatPlotter.create_plotter(fr)
+#     plotter.plot_monthly().show() 
