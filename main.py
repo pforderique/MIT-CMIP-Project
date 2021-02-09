@@ -19,7 +19,7 @@ mat_files_directory = mfr.mat_files_directory
 mat_file = "CMIP5_historical_tasmax.mat"
 
 # * INPUT: specify index (see show all models before changing) for gcm
-gcm_index = 0
+gcm_index = 16
 
 ###### HOW TO: GET MAT FILE INFORMATION ######
 
@@ -58,4 +58,8 @@ def plot_precip_example():
 
 if __name__ == "__main__":
     '''your code here'''
-    plot_precip_example()
+    # show_all_models()
+    # show_gcm_fields()
+    plot_monthly()
+
+    # plot_precip_example()
